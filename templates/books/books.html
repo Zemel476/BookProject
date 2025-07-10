@@ -1,0 +1,231 @@
+{% extends './layout.html' %}
+
+{% block body %}
+<script>
+    function savaData() {
+         var form_data = {
+            book_id: $('#book_id').val(),
+            title: $('#title').val(),
+            author: $('#author').val(),
+            publisher: $('#publisher').val(),
+            publish_date: $('#publish_date').val(),
+            isbn: $('#isbn').val(),
+            category: $('#category').val(),
+            location: $('#location').val(),
+            status: $('#status').val(),
+            count: $('#count').val(),
+        }
+
+        if (form_data["book_id"] == '' || form_data["book_id"] == null)
+            addBook(form_data)
+        else
+            editBook(form_data)
+    }
+
+    function addBook(add_data) {
+        $.ajax({
+            url: '{{ url_for('books.add_book') }}',
+            type: 'POST',
+            data: add_data,
+            success: function (data) {
+                window.location.reload()
+            }
+        })
+    }
+
+    function editBook(edit_data) {
+        $.ajax({
+            url: '{{ url_for('books.edit_book') }}',
+            type: 'POST',
+            data: edit_data,
+            success: function (data) {
+                window.location.reload()
+            }
+        })
+    }
+
+    function showAndCleanModal() {
+        $('#myModalLabel').text("新增 - 图书")
+        $('#book_id').val('')
+        $('#title').val('')
+        $('#author').val('')
+        $('#publisher').val('')
+        $('#publish_date').val('')
+        $('#isbn').val('')
+        $('#category').val('')
+        $('#location').val('')
+        $('#status').val(1)
+        $('#count').val('')
+
+        $('#bookModal').modal('show');
+    }
+
+    function fetchDataAndActivateModal(bookId) {
+        $.ajax({
+            url: '{{ url_for('books.edit_book_view') }}',
+            type: 'GET',
+            data:{ book_id: bookId },
+            success: function (response) {
+                var book_data = response['book_data']
+
+                $('#myModalLabel').text("修改 - 图书")
+                $('#book_id').val(book_data['book_id'])
+                $('#title').val(book_data['title'])
+                $('#author').val(book_data['author'])
+                $('#publisher').val(book_data['publisher'])
+                $('#publish_date').val(book_data['publish_date'])
+                $('#isbn').val(book_data['isbn'])
+                $('#category').val(book_data['category'])
+                $('#location').val(book_data['location'])
+                $('#status').val(book_data['status'])
+                $('#count').val(book_data['count'])
+
+                $('#bookModal').modal('show');
+            },
+        });
+    }
+</script>
+
+<button type="button" class="glyphicon glyphicon-plus btn btn-success btn-sm" style="margin-bottom: 20px" onclick="showAndCleanModal()">
+  新增
+</button>
+
+<table class="table table-striped table-hover">
+    <tr>
+        <th>图书名称</th>
+        <th>作者</th>
+        <th>出版社</th>
+        <th>出版日期</th>
+        <th>国际标准书号</th>
+        <th>分类</th>
+        <th>图书位置</th>
+        <th>图书状态</th>
+        <th>余量</th>
+        <th class="text-center">操作</th>
+    </tr>
+    {% for book in books %}
+        <tr>
+            <td>{{ book['title'] }}</td>
+            <td>{{ book['author'] }}</td>
+            <td>{{ book['publisher'] }}</td>
+            <td>{{ book['publish_date'] }}</td>
+            <td>{{ book['isbn'] }}</td>
+            <td>{{ book['category'] }}</td>
+            <td>{{ book['location'] }}</td>
+            <td>{{ book_status[book['status']] }}</td>
+            <td>{{ book['count'] }}</td>
+            <td class="text-center">
+                <a class="btn btn-info btn-sm" href="javascript:void(0)" role="button" onclick="fetchDataAndActivateModal({{ book['book_id'] }})">修改</a>
+                <a class="btn btn-danger btn-sm" href="{{ url_for('books.del_book', book_id=book['book_id']) }}" role="button" style="margin-left: 20px">删除</a>
+            </td>
+        </tr>
+    {%  endfor %}
+</table>
+
+<nav aria-label="Page navigation" class="text-center">
+  <ul class="pagination">
+    <li>
+      <a href="{{ url_for('books.get_books', page=(page_index - 1)) }}" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+      {% for i in range(page_count) %}
+          <li><a href="{{ url_for('books.get_books', page=(i + 1)) }}">{{ i + 1 }}</a></li>
+      {% endfor %}
+    <li>
+      <a href="{{ url_for('books.get_books', page=(page_index + 1)) }}" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<div class="modal fade" id="bookModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form class="form-horizontal">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">图书 - 新增</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group hidden">
+                        <label  class="col-sm-2 control-label">图书ID</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="book_id" name="book_id" placeholder="图书ID" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">图书名称</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="title" name="title" placeholder="图书名称" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">作者</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="author" name="author" placeholder="作者" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">出版社</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="publisher" name="publisher" placeholder="出版社">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">出版日期</label>
+                        <div class="col-sm-10">
+                            <input type="date" class="form-control" id="publish_date" name="publish_date" placeholder="出版日期">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">国际标准书号</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="isbn" name="isbn" placeholder="国际标准书号">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">分类</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="category" name="category" placeholder="分类">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">图书位置</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="location" name="location" placeholder="图书位置">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">图书状态</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="status" name="status">
+                                <option value=1 selected>开放</option>
+                                <option value=2>未开放</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">图书余量</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" id="count" name="count" min="1" placeholder="图书余量">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="savaData()">提交</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+
+
+

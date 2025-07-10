@@ -1,0 +1,45 @@
+{% extends './layout.html' %}
+
+{% block body %}
+<div class="panel panel-default">
+  <div class="panel-heading">图书 - 归还</div>
+  <div class="panel-body">
+    <form class="form-horizontal" method="POST" action="{{url_for('borrow.giveback_borrow')}}">
+        <div class="form-group">
+        <label class="col-sm-2 control-label">图书名称</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" id="title" name="title" placeholder="图书名称" required>
+        </div>
+        </div>
+
+        <div class="form-group">
+        <label class="col-sm-2 control-label">学生证号</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" id="card_number" name="card_number" placeholder="学生证号" required>
+        </div>
+        </div>
+
+      <div class="form-group">
+        <label for="inputPassword3" class="col-sm-2 control-label">学生姓名</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" id="borrow_name" name="borrow_name" placeholder="学生姓名" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-3">
+          <button type="submit" class="btn btn-success btn-lg">提交</button>
+        </div>
+        <div class="col-sm-offset-2 col-sm-3">
+            <a class="btn btn-info btn-lg" href="{{ url_for('dashboard.get_dashboard') }}" role="button">返回</a>
+        </div>
+      </div>
+    </form>
+     {% if message %}
+       <div class="well"><p class="text-center">{{ message }}</div>
+   {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}
